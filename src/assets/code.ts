@@ -173,15 +173,20 @@ export default [
         (source: string, subString: string): boolean;
       }
 
-      let mySearch: SearchFunc;
-
-      mySearch = function (source: string, subString: string): boolean {
+      let mySearch: SearchFunc = function (source: string, subString: string): boolean {
         let result = source.search(subString);
         return result > -1;
       };
 
-      // And in objects:
+      // Typing function without interface
+      let myAdd: (baseValue: number, increment: number) => number = function (
+        x: number,
+        y: number
+      ): number {
+        return x + y;
+      };
 
+      // And in objects:
       interface X {
         values: (r: string, l: number) => number;
       }
@@ -225,6 +230,17 @@ export default [
       const poweredBy = r["x-powered-by"];
       const blah = r["x-blah"];
       const origin = r.origin;
+
+      ////////////////////////////////////////////////////////////////////////////
+
+      // More playing with types:
+
+      type NullableString = string | null | undefined;
+
+      type NonNullable<T> = T extends null | undefined ? never : T;
+      type x = NonNullable<null>
+      type y = NonNullable<String>
+
     },
   },
   {
@@ -298,6 +314,7 @@ export default [
       // Note the syntax, by typing it, we make sure person object
       // contains this types
       let { name, age }: { name: string; age: number } = person;
+      const { a, b } : {a: string, b: number} = {a: 1 , b:2};
 
       const person2 = { name2: "11", age2: "25", hobby2: "reading" };
       const { name2, age2 }: { name2: string; age2: number } = person2;
@@ -322,7 +339,7 @@ export default [
       };
 
       // Type is: Promise<{ age, name }>
-      type NewType2 = ReturnType<typeof getData2>;
+      type NewType2 = ReturnType<typeof getData2>; 
     },
   },
   {
@@ -341,9 +358,9 @@ export default [
       }
 
       // Generic class
-      class GenericNumber<T> {
+      declare class GenericNumber<T> {
         zeroValue: T;
-        add: (x: T, y: T) => T = (x, y) => x;
+        add: (x: T, y: T) => T;
       }
 
       let myGenericNumber = new GenericNumber<number>();
@@ -400,15 +417,36 @@ export default [
       }
 
       class Lion extends Animal {
+        // This constructor makes: createInstance(Lion).keeper.nametag; to fail check
+        // becasue parameter type c is expected to be a class which its constructor
+        // takes no arugments
+
+        // constructor(name: string) {
+        //   super();
+        // };
+
         keeper: ZooKeeper = new ZooKeeper();
       }
 
+      // c is a class that has consturctor with no params and returns a instance derived from Animal
       function createInstance<A extends Animal>(c: new () => A): A {
         return new c();
       }
 
       createInstance(Lion).keeper.nametag;
       createInstance(Bee).keeper.hasMask;
+
+      //// MORE ////
+
+      // We are using the "new" keyword to check if T is a class that contains a consturctor that takes params
+      // We also infer its args into a type P
+      type Args<T> = T extends new (...args: infer P) => any ? P : never;
+
+      class MyClass {
+        constructor(name: string, age: number) {}
+      }
+
+      type MyClassArgs = Args<typeof MyClass>; // [string, number]
     },
   },
   {
@@ -536,6 +574,8 @@ export default [
     title: "Type Guard",
     description: ``,
     code: () => {
+      // More on type guards: https://www.geeksforgeeks.org/how-to-use-type-guards-in-typescript/
+
       interface Cat {
         meow(): void;
       }
@@ -547,7 +587,12 @@ export default [
       // return type is a "type predicate". "pet is Cat" is our type predicate in this example.
 
       function isCat(pet: Dog | Cat): pet is Cat {
-        return (pet as Cat).meow !== undefined;
+        // The function returns boolean, but we cast the result using the "is" operator
+        // in the function's return type
+        return (pet as Cat).meow !== undefined; 
+
+        // Less safe but we can
+        // return 'meow' in pet;
       }
 
       let pet: Dog | Cat = { bark: () => {} };
@@ -565,7 +610,11 @@ export default [
         // Not safe - a can be a number too
         a.substring(3);
 
-        if (a === b) {
+        // We can:
+        typeof a === 'string' && a.substring(3);
+
+        // Or:
+        if (a === b)  {
           // This makes type narrowing!
           // It is safe to call string methods, because here we sure a is a string
           a.substring(3);
@@ -728,9 +777,9 @@ export default [
 
       declare function makeWatchedObject<Type>(
         obj: Type
-      ): Type & PropEventSource<Type>;
+      ): Type & PropEventSource<Type>; // ❗❗❗ Augmenting - return the type + advanced features! ❗❗❗
 
-      // Creating type
+      // Creating type that takes generic parameter!
       type PropEventSource<Type> = {
         // Interating the type properties, coercing them to string
         // Key - the property name, Type[key] the property type!
