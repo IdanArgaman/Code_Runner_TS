@@ -462,30 +462,30 @@ export default [
       const input = { a: "foo", b: 123 };
       const inputR = { y: "foo" };
       let fn: X = (input) => {};
-      fn(input)
-      fn(inputR)
+      fn(input);
+      fn(inputR);
 
       //////////////////////////////////////////////////////////////////////////
 
       type VariantAX = {
-        a: string
-        b?: never           // NOTE!
-      }
-      
+        a: string;
+        b?: never; // NOTE!
+      };
+
       type VariantBX = {
-          b: number
-          a?: never         // NOTE!
-      }
+        b: number;
+        a?: never; // NOTE!
+      };
 
       interface Y {
         (arg: VariantAX | VariantBX): void;
       }
-      
-      const inputX = {a: 'foo', b: 123 }
-      const inputY = {a: 'foo' }
-      const inputZ = {b: 123 }
-      const inputZ1 = {c: 123 }
-      const inputZ2 = {b: 123, c: 123 }
+
+      const inputX = { a: "foo", b: 123 };
+      const inputY = { a: "foo" };
+      const inputZ = { b: 123 };
+      const inputZ1 = { c: 123 };
+      const inputZ2 = { b: 123, c: 123 };
 
       let fnX: Y = (input) => {};
 
@@ -499,9 +499,9 @@ export default [
 
       // Block method that uses generics:
 
-      type Read = {}
-      type Write = {}
-      const toWrite: Write = {}
+      type Read = {};
+      type Write = {};
+      const toWrite: Write = {};
 
       class MyCache<T, R> {
         cache: { [index: number]: T } = {};
@@ -512,12 +512,12 @@ export default [
           return true;
         }
         get(): R {
-          return '1' as R;
+          return "1" as R;
         }
       }
 
       const cache = new MyCache<Write, Read>();
-      cache.put(toWrite) // ✅ allowed
+      cache.put(toWrite); // ✅ allowed
 
       const cache2 = new MyCache<never, Read>();
       cache2.get();
@@ -525,10 +525,188 @@ export default [
 
       // We can type the argument of the put method as never
       // to have a read-only cache only allowing for reading dataS
-      class ReadOnlyCache<R> extends MyCache</* ⚠️ */ never, number> {} 
+      class ReadOnlyCache<R> extends MyCache</* ⚠️ */ never, number> {}
       const readOnlyCache = new ReadOnlyCache();
       readOnlyCache.get();
-      readOnlyCache.put(1);   // We cannot invoke put since it accepts never!
+      readOnlyCache.put(1); // We cannot invoke put since it accepts never!
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Type Guard",
+    description: ``,
+    code: () => {
+      interface Cat {
+        meow(): void;
+      }
+      interface Dog {
+        bark(): void;
+      }
+
+      // To define a user-defined type guard, we simply need to define a function whose
+      // return type is a "type predicate". "pet is Cat" is our type predicate in this example.
+
+      function isCat(pet: Dog | Cat): pet is Cat {
+        return (pet as Cat).meow !== undefined;
+      }
+
+      let pet: Dog | Cat = { bark: () => {} };
+
+      // Using the 'is' keyword
+      if (isCat(pet)) {
+        pet.meow();
+      } else {
+        pet.bark();
+      }
+
+      ///////////////////////////////////////
+
+      function getValues(a: number | string, b: string) {
+        // Not safe - a can be a number too
+        a.substring(3);
+
+        if (a === b) {
+          // This makes type narrowing!
+          // It is safe to call string methods, because here we sure a is a string
+          a.substring(3);
+        } else {
+          // if there is no narrowing, type remains unknown
+          console.log(typeof a); // number or string
+        }
+      }
+
+      ///////////////////////////////////////
+
+      interface Car {
+        brand: string;
+        model: string;
+        year: number;
+      }
+
+      function isCar(vehicle: any): vehicle is Car {
+        return (
+          typeof vehicle === "object" &&
+          vehicle !== null &&
+          "brand" in vehicle &&
+          "model" in vehicle &&
+          "year" in vehicle
+        );
+      }
+
+      function inspectVehicle(vehicle: any) {
+        if (isCar(vehicle)) {
+          // Inside this block, TypeScript knows that 'vehicle' is of type 'Car'
+          console.log("Brand:", vehicle.brand);
+          console.log("Model:", vehicle.model);
+          console.log("Year:", vehicle.year);
+        } else {
+          console.log("Not a valid car object.");
+        }
+      }
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Mapped Types",
+    description: ``,
+    code: () => {
+      // Mapped types used the "in" keyword and the "keyof" keywords
+
+      // We create a new type, containing the properties of Type
+      // and returning a boolean value for each property
+      type OptionsFlags<Type> = {
+        [key in keyof Type]: boolean;
+      };
+
+      type Features = {
+        darkMode: () => void;
+        newUserProfile: () => void;
+      };
+
+      type FeatureOptions = OptionsFlags<Features>;
+
+      ///////////////////////////////////////////////////////////////////////////////////
+
+      // We can remove or add modifiers by prefixing with - or +
+      // If we don’t add a prefix, then + is assumed.
+
+      // Remove readyonly from type
+      type CreateMutable<Type> = {
+        -readonly [Property in keyof Type]: Type[Property];
+      };
+
+      type LockedAccount = {
+        readonly id: string;
+        readonly name: string;
+      };
+
+      type UnlockedAccount = CreateMutable<LockedAccount>;
+
+      ///////////////////////////////////////////////////////////////////////////////////
+
+      // Remove optional from Type
+      type Concrete<Type> = {
+        [Property in keyof Type]-?: Type[Property];
+      };
+
+      type MaybeUser = {
+        id: string;
+        name?: string;
+        age?: number;
+      };
+
+      type User = Concrete<MaybeUser>;
+
+      ///////////////////////////////////////////////////////////////////////////////////
+
+      // Great functionality using the "as" that let as create new names
+
+      type Getters<Type> = {
+        [Property in keyof Type as `get${Capitalize<
+          string & Property
+        >}`]: () => Type[Property];
+      };
+
+      interface Person {
+        name: string;
+        age: number;
+        location: string;
+      }
+
+      /*
+        type LazyPerson = {
+          getName: () => string;
+          getAge: () => number;
+          getLocation: () => string;
+        }
+      */
+
+      type LazyPerson = Getters<Person>;
+
+      ///////////////////////////////////////////////////////////////////////////////////
+
+      type EventConfig<Events extends { kind: string }> = {
+        // We iterate the generic parameter
+        // we construct property name from the 'kind' property
+        // the value of the property is function that takes event and returns void 
+
+        // Here we use the "in" keyword and the "as" keyword
+        // no need for the "keyof" keyword because we don't iterate keys
+        [E in Events as E["kind"]]: (event: E) => void;
+      };
+
+      type SquareEvent = { kind: "square"; x: number; y: number };
+      type CircleEvent = { kind: "circle"; radius: number };
+
+      // We pass a union as the generic param, so we get 2 generic parameters
+      type Config = EventConfig<SquareEvent | CircleEvent>;
+
+      /*
+      type Config = {
+          [kind] square: [value] (event: SquareEvent) => [return value] void;
+          circle: (event: CircleEvent) => void;
+      }
+      */
     },
   },
 ];
