@@ -7,9 +7,6 @@
       <router-link :to="{ name: 'code', params: { codeBase: 'code' } }">
         TS Learn
       </router-link>
-      <!-- <router-link :to="{ path: '/code/algorithms/?showCategories=false' }">
-        Algorithms
-      </router-link> -->
     </nav>
     <router-view></router-view>
   </div>
