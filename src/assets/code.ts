@@ -719,6 +719,8 @@ export default [
     title: "Template Literal Types",
     description: ``,
     code: () => {
+      // Source: https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html#inference-with-template-literals
+
       // The function takes a object and returns its Type intersected with the Type created
       // by PropEventSource! 
       // ❗❗❗ Note we don't implement it, we just declare it to and make Typescript assuming the
