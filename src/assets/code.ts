@@ -610,10 +610,14 @@ export default [
     title: "Mapped Types",
     description: ``,
     code: () => {
-      // Mapped types used the "in" keyword and the "keyof" keywords
+      // Source: https://www.typescriptlang.org/docs/handbook/2/mapped-types.html
+
+      // Mapped types used the "in" keyword which takes an iteratee 
 
       // We create a new type, containing the properties of Type
       // and returning a boolean value for each property
+      // Here, the iteratee is created using "keyof"
+      
       type OptionsFlags<Type> = {
         [key in keyof Type]: boolean;
       };
