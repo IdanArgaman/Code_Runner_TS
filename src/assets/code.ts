@@ -612,12 +612,13 @@ export default [
     code: () => {
       // Source: https://www.typescriptlang.org/docs/handbook/2/mapped-types.html
 
-      // Mapped types used the "in" keyword which takes an iteratee 
+      // Mapped types used the "in" keyword which takes an iteratee
 
       // We create a new type, containing the properties of Type
       // and returning a boolean value for each property
       // Here, the iteratee is created using "keyof"
-      
+
+      // 👍👍👍 We should note that type can take generics!
       type OptionsFlags<Type> = {
         [key in keyof Type]: boolean;
       };
@@ -692,7 +693,7 @@ export default [
       type EventConfig<Events extends { kind: string }> = {
         // We iterate the generic parameter
         // we construct property name from the 'kind' property
-        // the value of the property is function that takes event and returns void 
+        // the value of the property is function that takes event and returns void
 
         // Here we use the "in" keyword and the "as" keyword
         // no need for the "keyof" keyword because we don't iterate keys
@@ -711,6 +712,55 @@ export default [
           circle: (event: CircleEvent) => void;
       }
       */
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Template Literal Types",
+    description: ``,
+    code: () => {
+      // The function takes a object and returns its Type intersected with the Type created
+      // by PropEventSource! 
+      // ❗❗❗ Note we don't implement it, we just declare it to and make Typescript assuming the
+      // function exist somewhere so we can use it!
+
+      declare function makeWatchedObject<Type>(
+        obj: Type
+      ): Type & PropEventSource<Type>;
+
+      // Creating type
+      type PropEventSource<Type> = {
+        // Interating the type properties, coercing them to string
+        // Key - the property name, Type[key] the property type!
+        on<Key extends string & keyof Type>(
+          // The event name is a string combining key and the 'Changed' keyword
+          eventName: `${Key}Changed`,
+          // Type[key] is the type of the property
+          callback: (newValue: Type[Key]) => void
+        ): void;
+      };
+
+      // For this call the Type is: { firstName: string, lastName: string, age: number }
+      // So Key is: firstName | lastName | age
+      // and Type[key] is: string | stirng | number
+
+      const person = makeWatchedObject({
+        firstName: "Saoirse",
+        lastName: "Ronan",
+        age: 26,
+      });
+
+      person.on("firstNameChanged", (newName) => {
+        // (parameter) newName: string is correctly inferred 
+        console.log(`new name is ${newName.toUpperCase()}`);
+      });
+
+      person.on("ageChanged", (newAge) => {
+        // (parameter) newAge: number correctly inferred 
+        if (newAge < 0) {
+          console.warn("warning! negative age");
+        }
+      });
     },
   },
 ];
