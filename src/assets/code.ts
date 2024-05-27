@@ -14,25 +14,84 @@ export default [
         Second = "Second",
       }
 
+      // Define enum as key in an object!
       let obj: { [key in MyEnum]?: any };
 
       obj = {
         [MyEnum.First]: 1,
-        // x: 1 - Causes an error!
+        x: 1 // Causes an error!
       };
     },
   },
   {
     categoryId: CodeTypesEnum.GENERAL,
-    title: "Types and interface",
+    title: "Generic Functions Explained",
+    description: `More details: 
+      https://www.typescriptlang.org/docs/handbook/2/functions.html#inference
+      https://dmitripavlutin.com/typescript-function-type`,
+    code: () => {
+      // By declaring:
+      // We say: we want a function that get 'x' of type T and return result of type U
+      // So we have a freedom to accept functions that gets any input and return any output
+ 
+      // When defining a type the return value is defined by =>
+      type fn0 = <T,U>(x: T) => U
+
+      // No typing!
+      const fn1 = (f, z) => {
+        return f(z);
+      }
+
+      // With Typing! Note how we designate return value when typing a function, we use ":",
+      // in contrast when designating return value when defining a type, we use "=>".
+      const fn2 = <T,U>(
+          f: (x: T) => U, /* type definition, return value "=>" */
+          z: T
+        ): U  /* function definition, return value ":" */ => {
+        
+        f('1'); // We cannot send specific type for f, we need to support any type!
+                // because f accepts T which can be any type!
+                
+        return f(z);
+      }
+
+      fn2(x => x.toString(), '1'); // Defining z = '1', infer the type of x to be string
+      fn2(y => y * 2, 1); // Defining z = 1, infer the type of x to be number
+
+      /////////////////////////
+      // Typing map function //
+      /////////////////////////
+
+      // with no types:
+      const mapX = (f, arr) => arr.map((x) => f(x));
+      
+      // with types, note the difference when defining a type in contrast to functio type decoration:
+      type myMap = <T,U>(f: (x: T) => U, arr: T[]) => U[];
+      const map = <T,U>(f: (x: T) => U, arr: T[]) : U[] => arr.map((x) => f(x));
+
+      // Type script infer T and U types by usage, so we don't need to explicitly define them.
+      const result0 = map((x) => x.toString(), [1, 2, 3]);
+      const result1 = map((x) => x.toString(), [1, '2', 3]);
+      const result2 = map((x) => parseInt(x), ["1", "2", "3"]);
+      const result3 = map((x) => x % 2 === 0, [1, 2, 3]);
+      const result4 = map((x) => x ? 0 : 1, [false, true, false]);
+      const result5 = map((x) => x.length, [['a', 'b'], [1, 2, 3], []]);
+
+      parseInt(result1[0]);   // result1[0] is string, typescript correctly inferred it! 
+      result1[0].toUpperCase();
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Types VS interface",
     description: `Difference between type and interface`,
     code: () => {
       // Reference: https://blog.logrocket.com/types-vs-interfaces-typescript/
 
       /*
-        The major differnce is "Declaration Merging". This is why interfaces are more applicable
-        for libraries. Interfaces should generally be used when declaration merging is necessary,
-        such as extending an existing library or authoring a new one!
+        Types VS interface: The major differnce is "Declaration Merging". This is why interfaces 
+        are more applicable for libraries. Interfaces should generally be used when declaration
+        merging is necessary, such as extending an existing library or authoring a new one!
       */
 
       // Types can be used for Union and functions
@@ -40,7 +99,7 @@ export default [
       type AddFn = (num1: number, num2: number) => number;
 
       /* 
-        Type aliases in TypeScript mean “a name for any type.” They provide a way of creating new
+        Type aliases in TypeScript mean "a name for any type." They provide a way of creating new
         names for existing types. Type aliases don’t define new types; instead, they provide
         an alternative name for an existing type.
       */
@@ -60,7 +119,10 @@ export default [
         address: string;
       };
 
-      // Conditional types and mapped types:
+      ////////////////////////////////////////
+      // Conditional types and mapped types //
+      ////////////////////////////////////////
+      
       type Car = "ICE" | "EV";
 
       type ChargeEV = (kws: number) => void;
@@ -68,26 +130,31 @@ export default [
 
       // Note the constraint on the generic
       // Then note the checks agains a Type in the ternary
-      type RefillHandler<A extends Car> = A extends "ICE"
+
+      type RefillHandler<A extends Car> = A extends "ICE" /* Type mapping */
         ? FillPetrol
         : A extends "EV"
         ? ChargeEV
         : never;
 
       // The types for chargeTesla and refillToyota are determined by the computed generic
+
       const chargeTesla: RefillHandler<"EV"> = (
-        power /* cannot use extra param, x*/
+        power
       ) => {
-        // Implementation for charging electric cars (EV)
+        
       };
       const refillToyota: RefillHandler<"ICE"> = (
         fuelType,
-        amount /* cannot use extra param, x*/
+        amount,
       ) => {
         // Implementation for refilling internal combustion engine cars (ICE)
       };
 
-      // Declaration merging: Interface can be merged
+      /////////////////////////
+      // Declaration merging //
+      /////////////////////////
+
       interface Client {
         name: string;
       }
@@ -111,7 +178,6 @@ export default [
       type VIPClient2 = Client & { benefits: string[] }; // Client is a type
 
       // Extension conflict are not allowed in interfaces:
-
       interface Person {
         getPermission: () => string;
       }
@@ -122,11 +188,12 @@ export default [
 
       // But we is allowed in types and TS will automatically merge all
       // properties instead of throwing errors
-
       type PersonW = {
         getPermission: (id: string) => string;
       };
 
+      // Note the & which combines the two types
+      // now we can call getPermission with a string or string[]
       type StaffW = PersonW & {
         getPermission: (id: string[]) => string[];
       };
@@ -137,6 +204,10 @@ export default [
             string;
         },
       };
+
+      ////////////////////
+      // Typing Classes //
+      ////////////////////
 
       // In TypeScript, we can implement a class using either an interface or a type alias:
 
@@ -164,11 +235,10 @@ export default [
         }
       }
 
-      ////////////////////////////////////////////////////////////////////////////
-
-      // In addition to describing an object with properties, interfaces are also
-      // capable of describing function types.
-
+      //////////////////////
+      // Typing functions //
+      //////////////////////
+ 
       interface SearchFunc {
         (source: string, subString: string): boolean;
       }
@@ -179,6 +249,8 @@ export default [
       };
 
       // Typing function without interface
+      type myAddeType = (baseValue: number, increment: number) => number;
+
       let myAdd: (baseValue: number, increment: number) => number = function (
         x: number,
         y: number
@@ -186,20 +258,9 @@ export default [
         return x + y;
       };
 
-      // And in objects:
-      interface X {
-        values: (r: string, l: number) => number;
-      }
-
-      const obj: X = {
-        values(x: string, y: number) {
-          return y;
-        },
-      };
-
-      ////////////////////////////////////////////////////////////////////////////
-
-      // Indexable types
+      /////////////////////
+      // Indexable types //
+      /////////////////////
 
       interface StringArray {
         [index: number]: string;
@@ -231,16 +292,14 @@ export default [
       const blah = r["x-blah"];
       const origin = r.origin;
 
-      ////////////////////////////////////////////////////////////////////////////
-
-      // More playing with types:
+      //////////////////////////////
+      // More playing with types: //
+      //////////////////////////////
 
       type NullableString = string | null | undefined;
-
       type NonNullable<T> = T extends null | undefined ? never : T;
       type x = NonNullable<null>
       type y = NonNullable<String>
-
     },
   },
   {
@@ -248,10 +307,7 @@ export default [
     title: "Tuples",
     description: `Using TS Tuples`,
     code: () => {
-      /*
-        Tuples allow us to define BOTH fixed types and order in an array
-      */
-
+      // Tuples allow us to define BOTH fixed types and order in an array
       type TeamMember = [name: string, role: string, age: number];
 
       // Creating tuples by interface
@@ -310,15 +366,14 @@ export default [
     title: "Object destructing with typing",
     description: `The syntax is a bit weird`,
     code: () => {
+      // Note the syntax: by typing it, we make sure person object contains these types
       const person = { name: "Alice", age: 25, hobby: "reading" };
-      // Note the syntax, by typing it, we make sure person object
-      // contains this types
       let { name, age }: { name: string; age: number } = person;
-      const { a, b } : {a: string, b: number} = {a: 1 , b:2};
 
-      const person2 = { name2: "11", age2: "25", hobby2: "reading" };
+      const person2 = { name2: "11", age2: "25" /* ERROR */, hobby2: "reading" };
       const { name2, age2 }: { name2: string; age2: number } = person2;
-      console.log(name2, age2);
+
+      const { a, b } : {a: string, b: number} = { a: 1 /* ERROR */, b:2 };
     },
   },
   {
@@ -344,7 +399,7 @@ export default [
   },
   {
     categoryId: CodeTypesEnum.GENERAL,
-    title: "Generic",
+    title: "Generic classes and generic constraints",
     description: ``,
     code: () => {
       // Generic constraints
@@ -353,7 +408,7 @@ export default [
       }
 
       function loggingIdentity<Type extends Lengthwise>(arg: Type): Type {
-        console.log(arg.length); // Now we know it has a .length property, so no more error
+        console.log(arg.length); // Thanks to the constraint, we know for sure arg has a "length" property!
         return arg;
       }
 
@@ -717,7 +772,9 @@ export default [
 
       type Getters<Type> = {
         [Property in keyof Type as `get${Capitalize<
-          string & Property
+          // Note that we must intersect string and Property in order to use
+          // the Property in string literal
+          string & Property   
         >}`]: () => Type[Property];
       };
 
@@ -754,13 +811,6 @@ export default [
 
       // We pass a union as the generic param, so we get 2 generic parameters
       type Config = EventConfig<SquareEvent | CircleEvent>;
-
-      /*
-      type Config = {
-          [kind] square: [value] (event: SquareEvent) => [return value] void;
-          circle: (event: CircleEvent) => void;
-      }
-      */
     },
   },
   {
@@ -781,8 +831,10 @@ export default [
 
       // Creating type that takes generic parameter!
       type PropEventSource<Type> = {
+
         // Interating the type properties, coercing them to string
         // Key - the property name, Type[key] the property type!
+
         on<Key extends string & keyof Type>(
           // The event name is a string combining key and the 'Changed' keyword
           eventName: `${Key}Changed`,
@@ -801,13 +853,13 @@ export default [
         age: 26,
       });
 
+      // (parameter) newName: string is correctly inferred 
       person.on("firstNameChanged", (newName) => {
-        // (parameter) newName: string is correctly inferred 
         console.log(`new name is ${newName.toUpperCase()}`);
       });
 
+      // (parameter) newAge: number correctly inferred 
       person.on("ageChanged", (newAge) => {
-        // (parameter) newAge: number correctly inferred 
         if (newAge < 0) {
           console.warn("warning! negative age");
         }
