@@ -872,4 +872,28 @@ export default [
       });
     },
   },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Generic Interface",
+    description: ``,
+    code: () => {
+      // Interfaces can also be declated as generic 
+      interface GenericIdentityFn<Type> {
+        (arg: Type): Type;
+      }
+       
+      // Generic function, accepts any type
+      function identity<Type>(arg: Type): Type {
+        return arg;
+      }
+       
+      identity('1')
+      identity(1)
+
+      // But here we're locking the type!
+      let myIdentity: GenericIdentityFn<number> = identity;
+      myIdentity('1') // Type was locked
+      myIdentity(1)
+    },
+  },
 ];
