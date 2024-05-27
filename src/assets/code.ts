@@ -65,7 +65,7 @@ export default [
       // with no types:
       const mapX = (f, arr) => arr.map((x) => f(x));
       
-      // with types, note the difference when defining a type in contrast to functio type decoration:
+      // with types, note the difference when defining a type in contrast to function type decoration:
       type myMap = <T,U>(f: (x: T) => U, arr: T[]) => U[];
       const map = <T,U>(f: (x: T) => U, arr: T[]) : U[] => arr.map((x) => f(x));
 
@@ -73,6 +73,12 @@ export default [
       const result0 = map((x) => x.toString(), [1, 2, 3]);
       const result1 = map((x) => x.toString(), [1, '2', 3]);
       const result2 = map((x) => parseInt(x), ["1", "2", "3"]);
+
+      // We should note that typescript infer the parameters for f
+      // by examing the array of passed as the second parameter, this is 
+      // why some f functions are not allowed for certain arrays
+      const result2X = map((x) => parseInt(x), [1]);
+
       const result3 = map((x) => x % 2 === 0, [1, 2, 3]);
       const result4 = map((x) => x ? 0 : 1, [false, true, false]);
       const result5 = map((x) => x.length, [['a', 'b'], [1, 2, 3], []]);
