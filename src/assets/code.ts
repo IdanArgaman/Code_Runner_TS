@@ -1101,7 +1101,10 @@ export default [
     code: () => {
       type Comparator<T> = (a: T, b: T) => number;
       // Look at how T locks the comparator
-      type GetMaxIndexType = <T>(input: T[], comparator: Comparator<T>) => number;
+      type GetMaxIndexType = <T>(
+        input: T[],
+        comparator: Comparator<T>
+      ) => number;
 
       const getMaxIndex: GetMaxIndexType = (input, comparator) => {
         if (input.length === 0) {
@@ -1127,9 +1130,12 @@ export default [
 
       //////////////////////////////////////////////////////////////////////////////////////////////
 
-      type Comparator2 = <T>(a: T, b: T) => number;     // No locking ability is provided !!!
-      type GetMaxIndexType2 = <T>(input: T[], comparator: Comparator2) => number;
-      
+      type Comparator2 = <T>(a: T, b: T) => number; // No locking ability is provided !!!
+      type GetMaxIndexType2 = <T>(
+        input: T[],
+        comparator: Comparator2
+      ) => number;
+
       const getMaxIndex2: GetMaxIndexType2 = (input, comparator) => {
         if (input.length === 0) {
           return -1;
@@ -1142,7 +1148,7 @@ export default [
         }
         return maxIndex;
       };
-            
+
       // Comparator2 - doesn't provide an option to lock types
       // So now we cannot provide a specific defintion
 
@@ -1165,46 +1171,122 @@ export default [
     description: "",
     code: () => {
       const f0 = (x) => x.toString();
-      const f1= (x: number) => x.toString();
+      const f1 = (x: number) => x.toString();
 
       // When provinding implementation we cannot provide a type specific one
       // because that implies on the type which is forbidden
-      const ft1 = <T,U>(x: T) : U => x.toString();
+      const ft1 = <T, U>(x: T): U => x.toString();
 
-      type ftType2 = <T,U>(x: T) => U;
-      const ft2: ftType2 = (x) => x.toString();     // Same as above!
+      type ftType2 = <T, U>(x: T) => U;
+      const ft2: ftType2 = (x) => x.toString(); // Same as above!
 
       // Now we provide type locking
-      type ftType3<T,U> = (x: T) => U;
+      type ftType3<T, U> = (x: T) => U;
       // We lock the type to string so we can provide an implementation that works with strings
       const ft3: ftType3<number, string> = (x) => x.toString();
 
-      const mapX = <T,U>(x: T, fn: (x: T) => U) : U => fn(x);
+      const mapX = <T, U>(x: T, fn: (x: T) => U): U => fn(x);
 
       const p0 = mapX(1, f0); // p0 is any because f0 is errornous
 
       const p1 = mapX(1, f1); // p1 is string
 
-      const p2 = mapX(1, x => x.toString()) // p1 is string
+      const p2 = mapX(1, (x) => x.toString()); // p1 is string
 
-      const p3 = mapX(1, ft1) // p3 is unknown
+      const p3 = mapX(1, ft1); // p3 is unknown
 
-      const p3_x = mapX(1, ft2) // p2_x is unknown
+      const p3_x = mapX(1, ft2); // p2_x is unknown
 
-      const p3_y = mapX(1, ft3) // p3_y is string
+      const p3_y = mapX(1, ft3); // p3_y is string
 
-      const ft4 = x => x + 2
-      const p4 = mapX(1, ft4) // p4 is any
+      const ft4 = (x) => x + 2;
+      const p4 = mapX(1, ft4); // p4 is any
 
-      const ft4_z = <T extends number>(x:T) => x + 2
-      const p4_z = mapX(1, ft4_z) // p4_z is number
+      const ft4_z = <T extends number>(x: T) => x + 2;
+      const p4_z = mapX(1, ft4_z); // p4_z is number
 
-      const ft4_x = (x: number) => x + 2
-      const p4_x = mapX(1, ft4_x) // p4_x is number
-      const p4_y = mapX(1, x => x + 2) // p4_y is number
+      const ft4_x = (x: number) => x + 2;
+      const p4_x = mapX(1, ft4_x); // p4_x is number
+      const p4_y = mapX(1, (x) => x + 2); // p4_y is number
 
-      const ft5 = x => x * 2
-      const p5 = mapX(1, ft5) // p5 is number   
-    }
-  }
+      const ft5 = (x) => x * 2;
+      const p5 = mapX(1, ft5); // p5 is number
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Function override",
+    description: "",
+    // Good source: https://blog.logrocket.com/implementing-function-overloading-typescript/
+    code: () => {
+      interface User {
+        type: "user";
+        name: string;
+        age: number;
+        occupation: string;
+      }
+
+      interface Admin {
+        type: "admin";
+        name: string;
+        age: number;
+        role: string;
+      }
+
+      type Person = User | Admin;
+
+      const persons: Person[] = [
+        {
+          type: "user",
+          name: "Max Mustermann",
+          age: 25,
+          occupation: "Chimney sweep",
+        },
+        { type: "admin", name: "Jane Doe", age: 32, role: "Administrator" },
+        { type: "user", name: "Kate Müller", age: 23, occupation: "Astronaut" },
+        { type: "admin", name: "Bruce Willis", age: 64, role: "World saver" },
+        { type: "user", name: "Wilson", age: 23, occupation: "Ball" },
+        {
+          type: "admin",
+          name: "Agent Smith",
+          age: 23,
+          role: "Anti-virus engineer",
+        },
+      ];
+
+      function filterPersons(
+        persons: Person[],
+        personType: "user",
+        criteria: Partial<User>
+      ): User[];
+      function filterPersons(
+        persons: Person[],
+        personType: "admin",
+        criteria: Partial<Admin>
+      ): Admin[];
+
+      // The provided implementation must adhere both type so it works with the Person union
+      // and accetps both possbilities as personType
+      function filterPersons(
+        persons: Person[],
+        personType: "user" | "admin",
+        criteria: Partial<Person>
+      ): Person[] {
+        return persons
+          .filter((person) => person.type === personType)
+          .filter((person) => {
+            let criteriaKeys = Object.keys(criteria) as (keyof Person)[];
+            return criteriaKeys.every((fieldName) => {
+              return person[fieldName] === criteria[fieldName];
+            });
+          });
+      }
+
+      // Typescript infers the type of usersOfAge23 because it can match
+      // the correct definition using the second parameter
+      // It can even check the criteria at the last parameter
+      const usersOfAge23 = filterPersons(persons, "user", { occupation: "X" });
+      const adminsOfAge23 = filterPersons(persons, "admin", { role: "X" });
+    },
+  },
 ];
