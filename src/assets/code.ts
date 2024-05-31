@@ -1,6 +1,7 @@
 const CodeTypesEnum = {
   GENERAL: "GENERAL",
   UTILITY: "UTILITY",
+  SNIPPET: "SNIPPET",
 };
 
 export default [
@@ -932,25 +933,71 @@ export default [
       // Same here - trying to intersect two interfaces with "type" property contains different type!
 
       interface C {
-        type: 'T';
+        type: "T";
         feauB: string;
       }
 
       interface D {
-        type: 'Y';
+        type: "Y";
         feauB: string;
       }
 
       type E = C & D;
 
       let obj3: E = {} as E;
-      obj3.type;      // type is never, cause its value on the intersected object conflicts!
+      obj3.type; // type is never, cause its value on the intersected object conflicts!
 
       // Solution - omit the problematic property
 
-      type F = Omit<C, 'type'> & Omit<D, 'type'> & { type: 'Z'};
+      type F = Omit<C, "type"> & Omit<D, "type"> & { type: "Z" };
       let obj4: F = {} as F;
       obj4.type;
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.SNIPPET,
+    title: "Object Maniuplator Class with Types",
+    description:
+      "In this example awe want to extend/delete new object with properties",
+    code: () => {
+      // We want to add a new property named K to type T with the value of V
+      // Note the [NK in K] expression, we iterate over the K which is a string (property name)
+      // in order to extract that new and create a new object definition
+      // Good reference: https://github.com/Microsoft/TypeScript/pull/12114,
+      // type T2 = { [P in "x" | "y"]: P };  // { x: "x", y: "y" }
+
+      // Note the intersect of the existing type T with new type we created
+      type ObjectWithNewProp<T, K extends string, V> = T & { [NK in K]: V };  
+
+      class ObjectManipulator<T> {          // The class gets a type to work with
+        constructor(protected obj: T) {}
+
+        public set<K extends string, V>(
+          key: K,
+          value: V
+        ): ObjectManipulator<ObjectWithNewProp<T, K, V>> {    // Note the new type the returned here
+          return new ObjectManipulator({
+            ...this.obj,
+            [key]: value,
+          } as ObjectWithNewProp<T, K, V>);
+        }
+
+        public get<K extends keyof T>(key: K): T[K] {
+          return this.obj[key];
+        }
+
+        public delete<K extends keyof T>(
+          key: K
+        ): ObjectManipulator<Omit<T, K>> {
+          const newObj = { ...this.obj };
+          delete newObj[key];
+          return new ObjectManipulator(newObj);
+        }
+
+        public getObject(): T {
+          return this.obj;
+        }
+      }
     },
   },
 ];
