@@ -1040,7 +1040,8 @@ export default [
   {
     categoryId: CodeTypesEnum.SNIPPET,
     title: "Definition of toCurried function and its output for each call",
-    description: "The toCurreid function takes a function and convert it to a curried function",
+    description:
+      "The toCurreid function takes a function and convert it to a curried function",
     code: () => {
       function toCurried<T extends Function>(func: T): Function {
         const fullArgCount = func.length;
@@ -1093,4 +1094,117 @@ export default [
       const propResult2 = prop("y", { x: 1, y: "Hello" });
     },
   },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Working with types - advaned example",
+    description: "The importance of type locking",
+    code: () => {
+      type Comparator<T> = (a: T, b: T) => number;
+      // Look at how T locks the comparator
+      type GetMaxIndexType = <T>(input: T[], comparator: Comparator<T>) => number;
+
+      const getMaxIndex: GetMaxIndexType = (input, comparator) => {
+        if (input.length === 0) {
+          return -1;
+        }
+        var maxIndex = 0;
+        for (var i = 1; i < input.length; i++) {
+          if (comparator(input[i], input[maxIndex]) > 0) {
+            maxIndex = i;
+          }
+        }
+        return maxIndex;
+      };
+
+      // Locking the type by providing the type arguement as number
+      // so we can provide a specific implementation that works with numbers
+      const comp: Comparator<number> = (x: number, y: number) => x - y;
+      const pr = (x: number, y: number) => x - y;
+
+      getMaxIndex([1, 2, 3], (x, y) => x - y);
+      getMaxIndex([1, 2, 3], pr);
+      getMaxIndex([1, 2, 3], comp);
+
+      //////////////////////////////////////////////////////////////////////////////////////////////
+
+      type Comparator2 = <T>(a: T, b: T) => number;     // No locking ability is provided !!!
+      type GetMaxIndexType2 = <T>(input: T[], comparator: Comparator2) => number;
+      
+      const getMaxIndex2: GetMaxIndexType2 = (input, comparator) => {
+        if (input.length === 0) {
+          return -1;
+        }
+        var maxIndex = 0;
+        for (var i = 1; i < input.length; i++) {
+          if (comparator(input[i], input[maxIndex]) > 0) {
+            maxIndex = i;
+          }
+        }
+        return maxIndex;
+      };
+            
+      // Comparator2 - doesn't provide an option to lock types
+      // So now we cannot provide a specific defintion
+
+      // comp2 is error - it gets numbers but should support any type
+      const comp2: Comparator2 = (x: number, y: number) => x - y;
+      // compA is ok but cannot do anything with its types so it would be able to return number
+      const compA: Comparator2 = <T>(x: T, y: T) => 1;
+      // pr2 also works with numbers only
+      const pr2 = (x: number, y: number) => x - y;
+
+      getMaxIndex2([1, 2, 3], (x, y) => x - y);
+      getMaxIndex2([1, 2, 3], pr2);
+      getMaxIndex2([1, 2, 3], comp2);
+      getMaxIndex2([1, 2, 3], compA);
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Inferring Weirdness",
+    description: "",
+    code: () => {
+      const f0 = (x) => x.toString();
+      const f1= (x: number) => x.toString();
+
+      // When provinding implementation we cannot provide a type specific one
+      // because that implies on the type which is forbidden
+      const ft1 = <T,U>(x: T) : U => x.toString();
+
+      type ftType2 = <T,U>(x: T) => U;
+      const ft2: ftType2 = (x) => x.toString();     // Same as above!
+
+      // Now we provide type locking
+      type ftType3<T,U> = (x: T) => U;
+      // We lock the type to string so we can provide an implementation that works with strings
+      const ft3: ftType3<number, string> = (x) => x.toString();
+
+      const mapX = <T,U>(x: T, fn: (x: T) => U) : U => fn(x);
+
+      const p0 = mapX(1, f0); // p0 is any because f0 is errornous
+
+      const p1 = mapX(1, f1); // p1 is string
+
+      const p2 = mapX(1, x => x.toString()) // p1 is string
+
+      const p3 = mapX(1, ft1) // p3 is unknown
+
+      const p3_x = mapX(1, ft2) // p2_x is unknown
+
+      const p3_y = mapX(1, ft3) // p3_y is string
+
+      const ft4 = x => x + 2
+      const p4 = mapX(1, ft4) // p4 is any
+
+      const ft4_z = <T extends number>(x:T) => x + 2
+      const p4_z = mapX(1, ft4_z) // p4_z is number
+
+      const ft4_x = (x: number) => x + 2
+      const p4_x = mapX(1, ft4_x) // p4_x is number
+      const p4_y = mapX(1, x => x + 2) // p4_y is number
+
+      const ft5 = x => x * 2
+      const p5 = mapX(1, ft5) // p5 is number   
+    }
+  }
 ];
