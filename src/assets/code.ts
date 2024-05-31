@@ -967,15 +967,17 @@ export default [
       // type T2 = { [P in "x" | "y"]: P };  // { x: "x", y: "y" }
 
       // Note the intersect of the existing type T with new type we created
-      type ObjectWithNewProp<T, K extends string, V> = T & { [NK in K]: V };  
+      type ObjectWithNewProp<T, K extends string, V> = T & { [NK in K]: V };
 
-      class ObjectManipulator<T> {          // The class gets a type to work with
+      class ObjectManipulator<T> {
+        // The class gets a type to work with
         constructor(protected obj: T) {}
 
         public set<K extends string, V>(
           key: K,
           value: V
-        ): ObjectManipulator<ObjectWithNewProp<T, K, V>> {    // Note the new type the returned here
+        ): ObjectManipulator<ObjectWithNewProp<T, K, V>> {
+          // Note the new type the returned here
           return new ObjectManipulator({
             ...this.obj,
             [key]: value,
@@ -997,6 +999,41 @@ export default [
         public getObject(): T {
           return this.obj;
         }
+      }
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.SNIPPET,
+    title: "Promisify",
+    description:
+      "Object that works with callback and we want to convert to promise",
+    code: () => {
+      type ApiResponse<T> =
+        | {
+            status: "success";
+            data: T;
+          }
+        | {
+            status: "error";
+            data: string;
+          };
+
+      type PromisifyFunctionParam<T> = (
+        callback: PromsifiyFunctionCallback<T>
+      ) => void;
+      type PromsifiyFunctionCallback<T> = (response: ApiResponse<T>) => void;
+      type PromisifyResult<T> = () => Promise<T>;
+
+      // fn - a function that gets a callback as param
+      // callback - a function that gets response as param
+      function promisify<T>(fn: PromisifyFunctionParam<T>): PromisifyResult<T> {
+        return () => {
+          return new Promise((resolve) => {
+            fn((response) => {
+              if (response.status === "success") resolve(response.data);
+            });
+          });
+        };
       }
     },
   },
