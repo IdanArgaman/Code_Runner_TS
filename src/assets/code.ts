@@ -19,7 +19,7 @@ export default [
 
       obj = {
         [MyEnum.First]: 1,
-        x: 1 // Causes an error!
+        x: 1, // Causes an error!
       };
     },
   },
@@ -33,30 +33,29 @@ export default [
       // By declaring:
       // We say: we want a function that get 'x' of type T and return result of type U
       // So we have a freedom to accept functions that gets any input and return any output
- 
+
       // When defining a type the return value is defined by =>
-      type fn0 = <T,U>(x: T) => U
+      type fn0 = <T, U>(x: T) => U;
 
       // No typing!
       const fn1 = (f, z) => {
         return f(z);
-      }
+      };
 
       // With Typing! Note how we designate return value when typing a function, we use ":",
       // in contrast when designating return value when defining a type, we use "=>".
-      const fn2 = <T,U>(
-          f: (x: T) => U, /* type definition, return value "=>" */
-          z: T
-        ): U  /* function definition, return value ":" */ => {
-        
-        f('1'); // We cannot send specific type for f, we need to support any type!
-                // because f accepts T which can be any type!
-                
-        return f(z);
-      }
+      const fn2 = <T, U>(
+        f: (x: T) => U /* type definition, return value "=>" */,
+        z: T
+      ): U /* function definition, return value ":" */ => {
+        f("1"); // We cannot send specific type for f, we need to support any type!
+        // because f accepts T which can be any type!
 
-      fn2(x => x.toString(), '1'); // Defining z = '1', infer the type of x to be string
-      fn2(y => y * 2, 1); // Defining z = 1, infer the type of x to be number
+        return f(z);
+      };
+
+      fn2((x) => x.toString(), "1"); // Defining z = '1', infer the type of x to be string
+      fn2((y) => y * 2, 1); // Defining z = 1, infer the type of x to be number
 
       /////////////////////////
       // Typing map function //
@@ -64,26 +63,26 @@ export default [
 
       // with no types:
       const mapX = (f, arr) => arr.map((x) => f(x));
-      
+
       // with types, note the difference when defining a type in contrast to function type decoration:
-      type myMap = <T,U>(f: (x: T) => U, arr: T[]) => U[];
-      const map = <T,U>(f: (x: T) => U, arr: T[]) : U[] => arr.map((x) => f(x));
+      type myMap = <T, U>(f: (x: T) => U, arr: T[]) => U[];
+      const map = <T, U>(f: (x: T) => U, arr: T[]): U[] => arr.map((x) => f(x));
 
       // Type script infer T and U types by usage, so we don't need to explicitly define them.
       const result0 = map((x) => x.toString(), [1, 2, 3]);
-      const result1 = map((x) => x.toString(), [1, '2', 3]);
+      const result1 = map((x) => x.toString(), [1, "2", 3]);
       const result2 = map((x) => parseInt(x), ["1", "2", "3"]);
 
       // We should note that typescript infer the parameters for f
-      // by examing the array of passed as the second parameter, this is 
+      // by examing the array of passed as the second parameter, this is
       // why some f functions are not allowed for certain arrays
       const result2X = map((x) => parseInt(x), [1]);
 
       const result3 = map((x) => x % 2 === 0, [1, 2, 3]);
-      const result4 = map((x) => x ? 0 : 1, [false, true, false]);
-      const result5 = map((x) => x.length, [['a', 'b'], [1, 2, 3], []]);
+      const result4 = map((x) => (x ? 0 : 1), [false, true, false]);
+      const result5 = map((x) => x.length, [["a", "b"], [1, 2, 3], []]);
 
-      parseInt(result1[0]);   // result1[0] is string, typescript correctly inferred it! 
+      parseInt(result1[0]); // result1[0] is string, typescript correctly inferred it!
       result1[0].toUpperCase();
     },
   },
@@ -128,7 +127,7 @@ export default [
       ////////////////////////////////////////
       // Conditional types and mapped types //
       ////////////////////////////////////////
-      
+
       type Car = "ICE" | "EV";
 
       type ChargeEV = (kws: number) => void;
@@ -145,15 +144,8 @@ export default [
 
       // The types for chargeTesla and refillToyota are determined by the computed generic
 
-      const chargeTesla: RefillHandler<"EV"> = (
-        power
-      ) => {
-        
-      };
-      const refillToyota: RefillHandler<"ICE"> = (
-        fuelType,
-        amount,
-      ) => {
+      const chargeTesla: RefillHandler<"EV"> = (power) => {};
+      const refillToyota: RefillHandler<"ICE"> = (fuelType, amount) => {
         // Implementation for refilling internal combustion engine cars (ICE)
       };
 
@@ -244,12 +236,15 @@ export default [
       //////////////////////
       // Typing functions //
       //////////////////////
- 
+
       interface SearchFunc {
         (source: string, subString: string): boolean;
       }
 
-      let mySearch: SearchFunc = function (source: string, subString: string): boolean {
+      let mySearch: SearchFunc = function (
+        source: string,
+        subString: string
+      ): boolean {
         let result = source.search(subString);
         return result > -1;
       };
@@ -304,8 +299,8 @@ export default [
 
       type NullableString = string | null | undefined;
       type NonNullable<T> = T extends null | undefined ? never : T;
-      type x = NonNullable<null>
-      type y = NonNullable<String>
+      type x = NonNullable<null>;
+      type y = NonNullable<String>;
     },
   },
   {
@@ -376,10 +371,14 @@ export default [
       const person = { name: "Alice", age: 25, hobby: "reading" };
       let { name, age }: { name: string; age: number } = person;
 
-      const person2 = { name2: "11", age2: "25" /* ERROR */, hobby2: "reading" };
+      const person2 = {
+        name2: "11",
+        age2: "25" /* ERROR */,
+        hobby2: "reading",
+      };
       const { name2, age2 }: { name2: string; age2: number } = person2;
 
-      const { a, b } : {a: string, b: number} = { a: 1 /* ERROR */, b:2 };
+      const { a, b }: { a: string; b: number } = { a: 1 /* ERROR */, b: 2 };
     },
   },
   {
@@ -400,7 +399,7 @@ export default [
       };
 
       // Type is: Promise<{ age, name }>
-      type NewType2 = ReturnType<typeof getData2>; 
+      type NewType2 = ReturnType<typeof getData2>;
     },
   },
   {
@@ -650,7 +649,7 @@ export default [
       function isCat(pet: Dog | Cat): pet is Cat {
         // The function returns boolean, but we cast the result using the "is" operator
         // in the function's return type
-        return (pet as Cat).meow !== undefined; 
+        return (pet as Cat).meow !== undefined;
 
         // Less safe but we can
         // return 'meow' in pet;
@@ -672,10 +671,10 @@ export default [
         a.substring(3);
 
         // We can:
-        typeof a === 'string' && a.substring(3);
+        typeof a === "string" && a.substring(3);
 
         // Or:
-        if (a === b)  {
+        if (a === b) {
           // This makes type narrowing!
           // It is safe to call string methods, because here we sure a is a string
           a.substring(3);
@@ -780,7 +779,7 @@ export default [
         [Property in keyof Type as `get${Capitalize<
           // Note that we must intersect string and Property in order to use
           // the Property in string literal
-          string & Property   
+          string & Property
         >}`]: () => Type[Property];
       };
 
@@ -827,7 +826,7 @@ export default [
       // Source: https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html#inference-with-template-literals
 
       // The function takes a object and returns its Type intersected with the Type created
-      // by PropEventSource! 
+      // by PropEventSource!
       // ❗❗❗ Note we don't implement it, we just declare it to and make Typescript assuming the
       // function exist somewhere so we can use it!
 
@@ -837,7 +836,6 @@ export default [
 
       // Creating type that takes generic parameter!
       type PropEventSource<Type> = {
-
         // Interating the type properties, coercing them to string
         // Key - the property name, Type[key] the property type!
 
@@ -859,12 +857,12 @@ export default [
         age: 26,
       });
 
-      // (parameter) newName: string is correctly inferred 
+      // (parameter) newName: string is correctly inferred
       person.on("firstNameChanged", (newName) => {
         console.log(`new name is ${newName.toUpperCase()}`);
       });
 
-      // (parameter) newAge: number correctly inferred 
+      // (parameter) newAge: number correctly inferred
       person.on("ageChanged", (newAge) => {
         if (newAge < 0) {
           console.warn("warning! negative age");
@@ -877,23 +875,82 @@ export default [
     title: "Generic Interface",
     description: ``,
     code: () => {
-      // Interfaces can also be declated as generic 
+      // Interfaces can also be declated as generic
       interface GenericIdentityFn<Type> {
         (arg: Type): Type;
       }
-       
+
       // Generic function, accepts any type
       function identity<Type>(arg: Type): Type {
         return arg;
       }
-       
-      identity('1')
-      identity(1)
+
+      identity("1");
+      identity(1);
 
       // But here we're locking the type!
       let myIdentity: GenericIdentityFn<number> = identity;
-      myIdentity('1') // Type was locked
-      myIdentity(1)
+      myIdentity("1"); // Type was locked
+      myIdentity(1);
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Intersection",
+    description: `Using the & intersection operator.
+      This allows you to combine many types to create a single type with all of the properties that
+      you require. An object of this type will have members from all of the types given. The "&"
+      operator is used to create the intersection type.
+      Info: https://www.geeksforgeeks.org/what-are-intersection-types-in-typescript/`,
+    code: () => {
+      interface A {
+        feauA: string;
+        feauB: string;
+      }
+
+      interface B {
+        feauA: number;
+        feauB: string;
+      }
+
+      // We try to intersect two interfaces that contain
+      // the same property but with different types
+      type AB = A & B;
+
+      let obj1: AB = {} as AB;
+      let obj2: AB = {} as AB;
+
+      // Error, Type '20' is not assignable to type 'string & number'
+      obj1.feauA = 20;
+      console.log(obj1.feauA);
+
+      obj2.feauB = "c";
+      console.log(obj2.feauB);
+
+      ///////////////////////////////////////////////////////////////////////////////////////////////
+
+      // Same here - trying to intersect two interfaces with "type" property contains different type!
+
+      interface C {
+        type: 'T';
+        feauB: string;
+      }
+
+      interface D {
+        type: 'Y';
+        feauB: string;
+      }
+
+      type E = C & D;
+
+      let obj3: E = {} as E;
+      obj3.type;      // type is never, cause its value on the intersected object conflicts!
+
+      // Solution - omit the problematic property
+
+      type F = Omit<C, 'type'> & Omit<D, 'type'> & { type: 'Z'};
+      let obj4: F = {} as F;
+      obj4.type;
     },
   },
 ];
