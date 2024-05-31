@@ -1037,4 +1037,60 @@ export default [
       }
     },
   },
+  {
+    categoryId: CodeTypesEnum.SNIPPET,
+    title: "Definition of toCurried function and its output for each call",
+    description: "The toCurreid function takes a function and convert it to a curried function",
+    code: () => {
+      function toCurried<T extends Function>(func: T): Function {
+        const fullArgCount = func.length;
+
+        function createSubFunction(curriedArgs: unknown[]) {
+          return function (...args: any[]) {
+            const newCurriedArguments = curriedArgs.concat(args);
+
+            if (newCurriedArguments.length > fullArgCount) {
+              throw new Error("Too many arguments");
+            }
+
+            if (newCurriedArguments.length === fullArgCount) {
+              return func(newCurriedArguments);
+            }
+
+            return createSubFunction(newCurriedArguments);
+          };
+        }
+
+        return createSubFunction([]);
+      }
+
+      interface P1<K extends string> {
+        (): P1<K>;
+        // At the first call we provided a key in K
+        // So now O must contain the provided key and return a value for that key
+        // So we can constraint O for better typescript
+        <O extends { [key in K]: O[K] }>(obj: O): O[K];
+      }
+
+      interface PropFunc {
+        // In case no paramter was provided, we return the same function instance
+        (): PropFunc;
+        // In case only a key is provided it can be anything! So we can only be sure
+        // it is just a string with no specific value
+        <K extends string>(propName: K): P1<K>;
+        // If we provide two parameter, we know for sure that k extends keys of O
+        // so we constraint the K type
+        <K extends keyof O, O>(item: K, obj: O): O[K];
+      }
+
+      // The function want to currey is (propName: O, obj: I)
+      // so it needs two parameters, string as the first and object as the second
+      const prop = toCurried(
+        <I, O extends keyof I>(propName: O, obj: I): I[O] => obj[propName]
+      ) as PropFunc;
+
+      const propResult1 = prop()("x")()({ x: 1, y: "Hello" });
+      const propResult2 = prop("y", { x: 1, y: "Hello" });
+    },
+  },
 ];
