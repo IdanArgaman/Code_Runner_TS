@@ -31,6 +31,9 @@ export default [
       https://www.typescriptlang.org/docs/handbook/2/functions.html#inference
       https://dmitripavlutin.com/typescript-function-type`,
     code: () => {
+      // Discussion about the difference between generic call signatures and generic types:
+      // https://stackoverflow.com/questions/74707455/typescript-generics-with-interface-parameters
+
       // By declaring:
       // We say: we want a function that get 'x' of type T and return result of type U
       // So we have a freedom to accept functions that gets any input and return any output
@@ -38,19 +41,14 @@ export default [
       // When defining a type the return value is defined by =>
       type fn0 = <T, U>(x: T) => U;
 
-      // No typing!
-      const fn1 = (f, z) => {
-        return f(z);
-      };
-
       // With Typing! Note how we designate return value when typing a function, we use ":",
       // in contrast when designating return value when defining a type, we use "=>".
       const fn2 = <T, U>(
         f: (x: T) => U /* type definition, return value "=>" */,
         z: T
       ): U /* function definition, return value ":" */ => {
-        f("1"); // We cannot send specific type for f, we need to support any type!
-        // because f accepts T which can be any type!
+        f(z); // We cannot send specific type for f, we need to support any type!
+              // because f accepts T which can be any type!
 
         return f(z);
       };
@@ -67,7 +65,7 @@ export default [
 
       // with types, note the difference when defining a type in contrast to function type decoration:
       type myMap = <T, U>(f: (x: T) => U, arr: T[]) => U[];
-      const map = <T, U>(f: (x: T) => U, arr: T[]): U[] => arr.map((x) => f(x));
+      const map: myMap = <T, U>(f: (x: T) => U, arr: T[]): U[] => arr.map((x) => f(x));
 
       // Type script infer T and U types by usage, so we don't need to explicitly define them.
       const result0 = map((x) => x.toString(), [1, 2, 3]);
