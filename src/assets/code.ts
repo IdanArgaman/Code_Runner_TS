@@ -7,6 +7,64 @@ const CodeTypesEnum = {
 export default [
   {
     categoryId: CodeTypesEnum.GENERAL,
+    title: "Useful links",
+    description: "",
+    code: () => {
+      /*
+      Function Types: 
+        https://dmitripavlutin.com/typescript-function-type/
+        https://www.dhiwise.com/post/in-depth-look-at-typescript-function-types-best-practices
+
+      Utility Types:
+        https://www.typescriptlang.org/docs/handbook/utility-types.html#excludeuniontype-excludedmembers
+
+      Typescript Exercises:
+        https://typescript-exercises.github.io/#exercise=12&file=%2Findex.ts
+      */
+    }
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
+    title: "Unknown",
+    description: `What is TS unknown?`,
+    code: () => {
+      // The unknown type represents any value. This is similar to the any type, 
+      // but is safer because it’s not legal to do anything with an unknown value.
+
+      function f1(a: any) {
+        a.b(); // OK
+      }
+
+      function f2(a: unknown) {
+        a.b(); // 'a' is of type 'unknown'.
+      }
+
+      /*
+        unknown which is the type-safe counterpart of any. Anything is assignable to unknown, 
+        but unknown isn't assignable to anything but itself and any without a type assertion 
+        or a control flow based narrowing. Likewise, no operations are permitted on an unknown
+        without first asserting or narrowing to a more specific type.
+
+        🚩 There are often times where we want to describe the least-capable type in TypeScript. 
+        This is useful for APIs that want to signal "this can be any value, so you must perform
+        some type of checking before you use it". This forces users to safely introspect
+        returned values.
+      */
+
+        let vAny: any = 10;          // We can assign anything to any
+        let vUnknown: unknown =  10; // We can assign anything to unknown just like any 
+
+
+        let s1: string = vAny;     // Any is assignable to anything 
+        let s2: string = vUnknown; // Invalid; we can't assign vUnknown to any other type (without an explicit assertion)
+
+        vAny.method();     // Ok; anything goes with any
+        vUnknown.method(); // Not ok; we don't know anything about this variable
+
+    },
+  },
+  {
+    categoryId: CodeTypesEnum.GENERAL,
     title: "Enums",
     description: `Enum as object keys`,
     code: () => {
@@ -65,7 +123,7 @@ export default [
 
       // with types, note the difference when defining a type in contrast to function type decoration:
       type myMap = <T, U>(f: (x: T) => U, arr: T[]) => U[];
-      const map: myMap = <T, U>(f: (x: T) => U, arr: T[]): U[] => arr.map((x) => f(x));
+      const map = <T, U>(f: (x: T) => U, arr: T[]): U[] => arr.map((x) => f(x));
 
       // Type script infer T and U types by usage, so we don't need to explicitly define them.
       const result0 = map((x) => x.toString(), [1, 2, 3]);
@@ -90,7 +148,9 @@ export default [
     title: "Types VS interface",
     description: `Difference between type and interface`,
     code: () => {
-      // Reference: https://blog.logrocket.com/types-vs-interfaces-typescript/
+      // References: 
+      //    https://blog.logrocket.com/types-vs-interfaces-typescript/
+      //    https://www.geeksforgeeks.org/what-are-intersection-types-in-typescript/
 
       /*
         Types VS interface: The major differnce is "Declaration Merging". This is why interfaces 
@@ -1213,7 +1273,7 @@ export default [
   },
   {
     categoryId: CodeTypesEnum.GENERAL,
-    title: "Function override",
+    title: "Function overload",
     description: "",
     // Good source: https://blog.logrocket.com/implementing-function-overloading-typescript/
     code: () => {
