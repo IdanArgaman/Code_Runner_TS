@@ -53,5 +53,15 @@ export default {
     // which can make that parameter conditionally optional/required based on a generic.
     // In plain JS, as shown here, it's just a slightly indirect way to name "the first
     // of the remaining arguments" without a separate array variable.
+    
+    // Compare with openDoor above: same destructuring result, but written the normal
+    // way -- destructuring the first parameter directly, with no rest/array layer.
+    // Nobody writes the "...[{ id, force }]" version in real code for a single object
+    // argument; it's only useful when that parameter needs to be conditionally
+    // optional/required via a rest tuple type, as in recursive-template-literals.ts.
+    function openDoor2({ id, force }: { id: string; force: boolean }) {
+      console.log(`Opening door ${id}, force=${force}`);
+    }
+    openDoor2({ id: "back", force: true });
   },
 } satisfies AdvancedTypingExample;
