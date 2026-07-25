@@ -4,6 +4,7 @@ import App from "./App.vue";
 import './index.css'
 
 import CodeRunner from "./components/CodeRunner.vue";
+import AdvancedTypingRunner from "./components/AdvancedTypingRunner.vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
 import 'highlight.js/styles/atom-one-dark.css';
@@ -23,6 +24,11 @@ const routes = [
     path: "/code/:codeBase",
     props: true,
     component: CodeRunner,
+  },
+  {
+    name: "advanced-typing",
+    path: "/advanced-typing",
+    component: AdvancedTypingRunner,
   },
 ];
 

@@ -7,6 +7,9 @@
       <router-link :to="{ name: 'code', params: { codeBase: 'code' } }">
         TS Learn
       </router-link>
+      <router-link :to="{ name: 'advanced-typing' }">
+        Advanced Typing
+      </router-link>
     </nav>
     <router-view></router-view>
   </div>
