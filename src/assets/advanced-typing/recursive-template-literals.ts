@@ -43,6 +43,13 @@ export default {
         // The params argument is required ONLY when ExtractParams<Path> has keys.
         // A tuple type that's conditionally [] vs [params: ...] makes the argument
         // itself optional/required based on that condition.
+
+        /*
+        ...x collects everything after path into an array called x — e.g. calling navigate("/home", { a: 1 }) makes that rest array [{ a: 1 }].
+        [params] then array-destructures that rest array: const [params] = x, so params = the array's index 0, i.e. the whole { a: 1 } object itself — not one property of it.
+        That object should have the shape of ExtractParams<Path>, which is {} for "/home" (so the rest array collapses to [] and params is optional) 
+        or { userId: string; postId: string } for "/users/:userId/posts/:postId" (so the rest array is [params: { userId: string; postId: string }] and params is required).
+        */
         ...[params]: keyof ExtractParams<Path> extends never
           ? []
           : [params: ExtractParams<Path>]
